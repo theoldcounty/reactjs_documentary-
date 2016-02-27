@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>React Js one page</title>
+
+    <script src="https://fb.me/react-with-addons-0.14.7.min.js"></script>
+    <script src="https://fb.me/react-dom-0.14.7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.2.js"></script>
+  </head>
+
+  <body>
+
+    <style>
+      section{
+        border: 1px solid black;
+      }
+    </style>
+
+    <section>
+     One
+
+     <div id="HelloMessage"></div>
+
+       <script  type="text/jsx">
+        var HelloMessage = React.createClass({
+          render: function() {
+            return <div>Hello {this.props.name}</div>;
+          }
+        });
+
+        ReactDOM.render(<HelloMessage name="Colonel Mustard" />, document.getElementById('HelloMessage'));
+      </script>
+
+    </section>
+
+    <section>
+      Two
+     <div id="CommentBox"></div>
+
+      <script  type="text/jsx">
+
+        var CommentBox = React.createClass({
+          render: function() {
+            return (
+              <div className="commentBox">
+                Hello, world! I am a CommentBox.
+              </div>
+            );
+          }
+        });
+        ReactDOM.render(<CommentBox />, document.getElementById('CommentBox'));
+      </script>
+
+
+    </section>
+
+    <section>
+      Three
+
+     <div id="MarkdownEditor"></div>
+
+
+      <script  type="text/jsx">
+      "use strict";
+
+      var MarkdownEditor = React.createClass({
+        displayName: "MarkdownEditor",
+
+        getInitialState: function getInitialState() {
+          return { value: 'Type some *markdown* here!' };
+        },
+        handleChange: function handleChange() {
+          this.setState({ value: this.refs.textarea.value });
+        },
+        rawMarkup: function rawMarkup() {
+          return { __html: (this.state.value, { sanitize: true }) };
+        },
+        render: function render() {
+          return React.createElement(
+            "div",
+            { className: "MarkdownEditor" },
+            React.createElement(
+              "h3",
+              null,
+              "Input"
+            ),
+            React.createElement("textarea", {
+              onChange: this.handleChange,
+              ref: "textarea",
+              defaultValue: this.state.value }),
+            React.createElement(
+              "h3",
+              null,
+              "Output"
+            ),
+            React.createElement("div", {
+              className: "content",
+              dangerouslySetInnerHTML: this.rawMarkup()
+            })
+          );
+        }
+      });
+
+      ReactDOM.render(React.createElement(MarkdownEditor, null), document.getElementById('MarkdownEditor'));
+      </script>
+
+    </section>
+
+  </body>
+</html>
