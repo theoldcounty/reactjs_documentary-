@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>React Js flux example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flux/2.1.1/Flux.js"></script>
+    <script src="https://fb.me/react-with-addons-0.14.7.min.js"></script>
+    <script src="https://fb.me/react-dom-0.14.7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.2.js"></script>
+</head>
+<body>
+
+
+<div id="app"></div>
+
+
+<script type="text/jsx">
+  // ----------
+  // Dispatcher
+  // ----------
+  var dispatcher = new Flux.Dispatcher();
+
+  // ------
+  // Stores
+  // ------
+  var AnswerStore = {
+    _listeners: [],
+    _answers: {
+      "0": {
+        "id": 0,
+        "votes": 0,
+        "text": "This is an answer"
+      }
+    },
+    get: function(id) {
+      return this._answers[id];
+    },
+    update: function(id, update) {
+      var answer = this.get(id);
+      var updatedAnswer = Object.assign({}, answer, update);
+      this._answers[id] = updatedAnswer;
+      this.emit();
+    },
+    listen: function(f) {
+      this._listeners.push(f);
+    },
+    emit: function() {
+      this._listeners.forEach(function(f) {
+        f();
+      });
+    }
+  };
+
+  dispatcher.register(function(action) {
+    console.log('[ACTION]', action);
+    switch(action.type) {
+      case 'UPVOTE':
+        var votes = AnswerStore.get(action.id).votes;
+        AnswerStore.update(action.id, { votes: votes + 1 });
+        break;
+      case 'DOWNVOTE':
+        var votes = AnswerStore.get(action.id).votes;
+        AnswerStore.update(action.id, { votes: votes - 1 });
+        break;
+    }
+  });
+
+  // ---------------
+  // Action Creators
+  // ---------------
+  var Actions = {
+    upvote: function(id) {
+      dispatcher.dispatch({
+        type: 'UPVOTE',
+        id: id
+      });
+    },
+    downvote: function(id) {
+      dispatcher.dispatch({
+        type: 'DOWNVOTE',
+        id: id
+      });
+    }
+  };
+
+  // ----------
+  // Components
+  // ----------
+  function Votes(props) {
+    var id = props.id;
+    return (
+      <div className='answer__votes'>
+        <a onClick={Actions.upvote.bind(null, id)}>&uArr;</a>
+        <strong>{props.votes}</strong>
+        <a onClick={Actions.downvote.bind(null, id)}>&dArr;</a>
+      </div>
+    );
+  }
+
+  function AnswerText(props) {
+    return <p className='answer__text'>{props.text}</p>;
+  }
+
+  function AnswerActions(props) {
+    var apiUrl = '/api/answers/' + props.id;
+
+    return (
+      <nav className='answer__actions'>
+        <a href={apiUrl + '/flag'}>Flag</a>
+        <a href={apiUrl + '/edit'}>Edit</a>
+        <a href={apiUrl + '/delete'}>Delete</a>
+      </nav>
+    );
+  }
+
+  var Answer = React.createClass({
+  	getInitialState: function() {
+      return {};
+    },
+    componentWillMount: function() {
+      this.update();
+      AnswerStore.listen(this.update);
+    },
+    update: function() {
+      var id = this.props.id;
+      this.setState({ answer: AnswerStore.get(id) });
+    },
+    render: function() {
+      var answer = this.state.answer;
+      return (
+        <div className='answer'>
+          <Votes id={answer.id} votes={answer.votes} />
+          <section className='answer__body'>
+            <AnswerText text={answer.text} />
+            <AnswerActions id={answer.id} />
+          </section>
+        </div>
+      );
+    }
+  });
+
+  ReactDOM.render(
+    <Answer id={"0"} />,
+    document.getElementById('app')
+  );
+</script>
+
+<style>
+
+  body {
+    font-family: Arial,'Helvetica Neue',Helvetica,sans-serif
+  }
+
+  .answer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .answer__votes {
+    text-align: center;
+    font-size: 16pt;
+    color: #777;
+    width: 2em;
+  }
+
+  .answer__votes > * {
+    display: block;
+  }
+
+  .answer__actions a + a {
+    margin-left: 0.5em;
+  }
+
+</style>
+
+</body>
+</html>
